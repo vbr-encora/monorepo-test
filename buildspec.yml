@@ -11,9 +11,10 @@ phases:
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 738989335057.dkr.ecr.$AWS_REGION.amazonaws.com
   build:
     commands:
+      - npm i
       - echo building code 
-      - npx nx build test
-      - npx nx run my-nest-app:build --no-cache
+      - npx -y nx build test
+      - npx -y nx run my-nest-app:build --no-cache
       - echo Building Docker image Backend ...
       - docker build -t nest-backend:$CODEBUILD_RESOLVED_SOURCE_VERSION ./apps/my-nest-app
       - echo Building Docker image FrontEnd ...
