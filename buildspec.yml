@@ -10,7 +10,7 @@ phases:
       nodejs: 20
   pre_build:
     commands:
-      - echo "Logging in to Amazon ECR repo : $ECR_REPO_URI"
+      - echo Logging in to Amazon ECR repo $ECR_REPO_URI
       - aws --version
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
   build:
