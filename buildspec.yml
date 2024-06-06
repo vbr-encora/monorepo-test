@@ -20,19 +20,19 @@ phases:
       - npx -y nx build test
       - npx -y nx run my-nest-app:build --no-cache
       - echo Building Docker image Backend ...
-      - docker build -t nest-backend ./apps/my-nest-app
+      - docker build -t nest-backend:backend_latest ./apps/my-nest-app
       - echo Building Docker image FrontEnd ...
-      - docker build -t frontend-test ./apps/test
+      - docker build -t frontend-test:frontend_latest ./apps/test
   post_build:
     commands:
       - echo Tagging Docker image backend...
-      - docker tag nest-backend:latest $ECR_REPO_URI/nest-backend:latest
+      - docker tag nest-backend:backend_latest $ECR_REPO_URI:backend_latest
       - echo Tagging Docker image frontend...
-      - docker tag frontend-test:latest $ECR_REPO_URI/frontend-test:latest
+      - docker tag frontend-test:frontend_latest $ECR_REPO_URI:frontend_latest
       - echo Pushing Docker backend image to Amazon ECR...
-      - docker push $ECR_REPO_URI/nest-backend:latest
+      - docker push $ECR_REPO_URI:backend_latest
       - echo Pushing Docker frontend image to Amazon ECR...
-      - docker push $ECR_REPO_URI/frontend-test:latest
+      - docker push $ECR_REPO_URI:frontend_latest
       
 artifacts:
   files:
