@@ -1,37 +1,39 @@
 version: 0.2
 
+env:
+  variables:
+    ECR_REPO_URI: "${AWS::AccountId}.dkr.ecr.$AWS_REGION.amazonaws.com"
+
 phases:
   install:
     runtime-versions:
       nodejs: 20
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Logging in to Amazon ECR repo : $ECR_REPO_URI"
       - aws --version
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 738989335057.dkr.ecr.$AWS_REGION.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
   build:
     commands:
       - npm i
-      - echo building code 
+      - echo building code
       - npx -y nx build test
       - npx -y nx run my-nest-app:build --no-cache
       - echo Building Docker image Backend ...
-      - docker build -t nest-backend:$CODEBUILD_RESOLVED_SOURCE_VERSION ./apps/my-nest-app
+      - docker build -t nest-backend ./apps/my-nest-app
       - echo Building Docker image FrontEnd ...
-      - docker build -t frontend-test:$CODEBUILD_RESOLVED_SOURCE_VERSION ./apps/test
+      - docker build -t frontend-test ./apps/test
   post_build:
     commands:
       - echo Tagging Docker image backend...
-      - docker tag nest-backend:$CODEBUILD_RESOLVED_SOURCE_VERSION $ECR_REPO_URI:latest
+      - docker tag nest-backend:latest $ECR_REPO_URI/nest-backend:latest
       - echo Tagging Docker image frontend...
-      - docker tag frontend-test:$CODEBUILD_RESOLVED_SOURCE_VERSION $ECR_REPO_URI:latest
+      - docker tag frontend-test:latest $ECR_REPO_URI/frontend-test:latest
       - echo Pushing Docker backend image to Amazon ECR...
-      - docker push nest-backend:$CODEBUILD_RESOLVED_SOURCE_VERSION
-      - docker push $ECR_REPO_URI:latest
+      - docker push $ECR_REPO_URI/nest-backend:latest
       - echo Pushing Docker frontend image to Amazon ECR...
-      - docker push frontend-test:$CODEBUILD_RESOLVED_SOURCE_VERSION
-      - docker push $ECR_REPO_URI:latest
-
+      - docker push $ECR_REPO_URI/frontend-test:latest
+      
 artifacts:
   files:
     - "**/*"

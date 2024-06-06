@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 # Copia el archivo compilado de la aplicación
-COPY dist/my-nest-app/* ./dist
+COPY dist/my-nest-app/* ./dist/
 
 # Copia los archivos de configuración
 COPY dist/my-nest-app/package.json ./
