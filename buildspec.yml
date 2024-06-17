@@ -35,8 +35,10 @@ phases:
       - docker push $ECR_REPO_URI:backend_latest
       - echo Pushing Docker frontend image to Amazon ECR...
       - docker push $ECR_REPO_URI:frontend_latest
+      - TASK_DEF_ARN_APP=$(aws ecs describe-services --cluster my-ecs-cluster --services my-ecs-task --query 'services[0].taskDefinition' --output text)
+      - TASK_DEF_REV_APP=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN_APP --query 'taskDefinition.revision' --output text)
       - echo Update ECS Service
-      - aws ecs update-service --cluster my-ecs-cluster --service my-ecs-service --task-definition my-ecs-task:latest --force-new-deployment
+      - aws ecs update-service --cluster my-ecs-cluster --service my-ecs-service --task-definition my-ecs-task:$TASK_DEF_REV_APP --force-new-deployment
 
 artifacts:
   files:
