@@ -10,6 +10,8 @@ phases:
       nodejs: 20
   pre_build:
     commands:
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+      - echo "AWS Account ID: $ACCOUNT_ID"
       - echo Logging in to Amazon ECR repo $ECR_REPO_URI
       - aws --version
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
@@ -24,16 +26,18 @@ phases:
       - echo Building Docker image FrontEnd ...
       - docker build -t frontend-test:frontend_latest ./apps/test
   post_build:
-    commands:
-      - echo Tagging Docker image backend...
-      - docker tag nest-backend:backend_latest $ECR_REPO_URI:backend_latest
-      - echo Tagging Docker image frontend...
-      - docker tag frontend-test:frontend_latest $ECR_REPO_URI:frontend_latest
-      - echo Pushing Docker backend image to Amazon ECR...
-      - docker push $ECR_REPO_URI:backend_latest
-      - echo Pushing Docker frontend image to Amazon ECR...
-      - docker push $ECR_REPO_URI:frontend_latest
-      
+    commands: |
+      echo Tagging Docker image backend...
+      docker tag nest-backend:backend_latest $ECR_REPO_URI:backend_latest
+      echo Tagging Docker image frontend...
+      docker tag frontend-test:frontend_latest $ECR_REPO_URI:frontend_latest
+      echo Pushing Docker backend image to Amazon ECR...
+      docker push $ECR_REPO_URI:backend_latest
+      echo Pushing Docker frontend image to Amazon ECR...
+      docker push $ECR_REPO_URI:frontend_latest
+      echo Update ECS Service
+      aws ecs update-service --cluster my-ecs-cluster --service my-ecs-service --task-definition my-ecs-task:latest --force-new-deployment
+
 artifacts:
   files:
     - "**/*"
